@@ -7,7 +7,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = "vnjgrbfnjfdk"
 socketio = SocketIO(app)
 
-f=open('job.log', 'w+')
 
 @app.route('/')
 def sessions():
@@ -25,7 +24,9 @@ def stream():
 @socketio.on('connect')
 def on_connect():
 	emit('my response', {'data':'Connected'})
+	f=open('job.log', 'w+')
 	f.write('Connected')
+	f.close()
 
 @socketio.on('disconnect')
 def on_disconnect():
