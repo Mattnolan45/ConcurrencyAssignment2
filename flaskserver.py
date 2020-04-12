@@ -2,6 +2,8 @@ from flask import Flask, request
 from ChunkGenerator import *
 
 
+generator = ChunkGenerator()
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -11,8 +13,14 @@ def display():
 
 @app.route('/test', methods=["GET"])
 def tst():
-	t = ChunkGenerator.ChunkByLetters( request.args.get("val1"), request.args.get("val2"))
+	t = generator.ChunkByLetters( request.args.get("val1"), request.args.get("val2"))
 	return "/n".join(t)
+
+
+@app.route('/Random', methods=["GET"])
+def RandomGeneratedChunk():
+	result = generator.GenerateRandomChunk()
+	return "/n".join(result)
 
 
 if __name__ == "__main__":
