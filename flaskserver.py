@@ -1,16 +1,16 @@
 import os
-from flask import Flask, request
+from flask import Flask, request, send_file
 from ChunkGenerator import *
 
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'D:/ConcurrencyAssignment2/UploadedFiles'
+GENERATE_FOLDER = 'D:/ConcurrencyAssignment2/GeneratedFiles'
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-
+app.config['GENERATE_FOLDER'] = GENERATE_FOLDER
 
 generator = ChunkGenerator()
-
 
 
 @app.route("/")
@@ -19,25 +19,28 @@ def display():
 
 
 @app.route('/chunk', methods=["GET"])
-def tst():
+def chunk():
 	t = generator.ChunkByLetters(request.args.get("fileName"), request.args.get("val1"), request.args.get("val2"))
-	return "/n".join(t)
+	return t
 
 
 @app.route('/Random', methods=["GET"])
 def RandomGeneratedChunk():
 	result = generator.GenerateRandomChunk()
-	return "/n".join(result)
+	return result
 
 
 @app.route('/upload', methods=["POST"])
 def uploadFile():
 	f = request.files['upload_file']
-	try:
-		f.save(os.path.join(app.config['UPLOAD_FOLDER'], f.filename))
-		msg = "{} uploaded successfully".format(f.filename)
-	except Exception as e:
-		msg = "Upload failed" 
+	if f.filename not in os.listdir(app.config['UPLOAD_FOLDER']): 
+		try:
+			f.save(os.path.join(app.config['UPLOAD_FOLDER'], f.filename))
+			msg = "{} uploaded successfully".format(f.filename)
+		except Exception as e:
+			msg = "Upload failed" 
+	else:
+		msg = "There is already a file present with the name {}".format(f.filename)
 	return msg
 
 
@@ -48,6 +51,10 @@ def getUploadedFiles():
 		if os.path.isfile(os.path.join(UPLOAD_FOLDER,file)):
 			fileList += file+"\n"
 	return fileList
+
+@app.route('/download',methods=["GET"])
+def downloadFile():
+	return send_file(os.path.join(GENERATE_FOLDER, request.args.get("fileName")),as_attachment=True)
 
 
 

@@ -1,5 +1,5 @@
-import random
-import os
+import random, os , uuid 
+
 
 class ChunkGenerator:
 
@@ -19,27 +19,38 @@ class ChunkGenerator:
 		return sortedLines
 
 
-	def ChunkByLetters(self,filename,Letter1,Letter2): # some reason if i choose a-c it returns a-b
-		FileSorted = self.sortByAlphabet(filename)
-		sortedWords = [w.split()[1] for w in FileSorted ] # get a list of just the words 
-		index1 = sortedWords.index(Letter1)  
-		index2 = len(sortedWords) - sortedWords[::-1].index(Letter2) - 1 
-		return FileSorted[index1 : index2] # add in counts from the spec
+	def GenerateChunkFile(self,OutFilename, contents): # add in file location
+		GENERATE_FOLDER = 'D:/ConcurrencyAssignment2/GeneratedFiles'
 
-	def GenerateChunkFile(self,OutFilename): # add in file location
-		contents = ChunkByLetters("g","k")
-
-		outputFile = open(OutFilename,"w",encoding="utf8") #  creates output file
+		outputFile = open(os.path.join(GENERATE_FOLDER, OutFilename),"w",encoding="utf8") #  creates output file
 		for line in contents:
 			outputFile.write(line)
 		outputFile.close()
+
+
+	def ChunkByLetters(self,filename,Letter1,Letter2): 
+		FileSorted = self.sortByAlphabet(filename)
+		sortedWords = [w.split()[1] for w in FileSorted ] # get a list of just the words 
+		letters = [l[0] for l in sortedWords]
+		try:
+			index1 = sortedWords.index(Letter1)  
+			index2 = len(sortedWords) - sortedWords[::-1].index(Letter2) - 1 
+		except Exception as e:
+			return "Values not in File"
+
+		unique_filename = str(uuid.uuid4().hex)+".txt" # unique filename
+		self.GenerateChunkFile(unique_filename,FileSorted[index1 : index2+ letters.count(Letter2)]) # add in counts from the spec                                                  
+		return unique_filename
+
 	
 
 	def GenerateRandomChunk(self): # generate random chunk using the default 
 		sortedFile = self.sortfile('default.txt')
 		rand1 = random.randrange(0, len(sortedFile)-2)
 		rand2 = random.randrange(rand1, len(sortedFile)-1)
-		return sortedFile[rand1:rand2]
 		
+		unique_filename = str(uuid.uuid4().hex)+".txt"
+		self.GenerateChunkFile(unique_filename, sortedFile[rand1:rand2]) # add in counts from the spec                                                  
+		return unique_filename
 
 

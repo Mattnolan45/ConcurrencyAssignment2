@@ -1,31 +1,52 @@
-import requests 
+import requests, os
+
+flaskUrl = 'http://127.0.0.1:5000' # local 
+download_path = 'D:/ConcurrencyAssignment2/DownloadedFiles' # directory for downloads
+
+
 
 def uploadFile(fileName): # upload file
-
-	file = {'upload_file': open(fileName,'rb')}
-
-	response = requests.post(
-		'http://127.0.0.1:5000/upload',
-    	files=file
-	)
-	print(response.content)
-
+	try:
+		file = {'upload_file': open(fileName,'rb')}
+		response = requests.post(
+			flaskUrl+'/upload',
+    		files=file
+		)
+		print(response.content)	
+	except Exception as e:
+		print('File {} cannot be found'.format(fileName))
+	
 
 def chunkfile(fileName, val1, val2): # chunk file
 	try:
 		print("Chunking {}".format(fileName))
 		response = requests.get(
-    		'http://127.0.0.1:5000/chunk',
+    		flaskUrl+'/chunk',
     		params={'fileName': fileName,'val1': val1, 'val2' : val2},
 		)	
-		print(response.content)
 	except Exception as e:
 		print("Invalid response from server")
+	return response.content
+
+
+def downloadFile(fileName):
+
+	response = requests.get(
+		flaskUrl+'/download',
+    	params={'fileName': fileName}
+	)
+	fileName = fileName.decode("utf-8")
+	outputFile = open(os.path.join(download_path, fileName),"w",encoding="utf8") #  creates output file
+	for line in response.text:
+		outputFile.write(line)
+	outputFile.close()
+	print("File downloaded")
+
 
 
 def ListServerFiles(): # list all files uploaded to the server
 	response = requests.get(
-		'http://127.0.0.1:5000/uploadedFiles'
+		flaskUrl+'/uploadedFiles'
 		)
 	
 	files = (response.content.decode()).split("\n")
@@ -38,18 +59,17 @@ def ChunkRandom(): # chunk random file
 	try:
 		print("Generating Random Chunk")
 		response = requests.get(
-    		'http://127.0.0.1:5000/Random'
+    		flaskUrl+'/Random'
 		)
-		print(response.content)
 	except Exception as e:
 		print("Invalid response from server")
-
+	return response.content
 
 
 # start client
 while True:
 	
-	print("Commands : Chunk ,Random ,Upload ,Stop") # pick command
+	print("Commands : Chunk [Letter - Letter ],Random ,Upload ,Stop") # pick command
 	text = input("Input Command: ")
 
 	if ( text == "Chunk"):
@@ -65,7 +85,7 @@ while True:
 		
 		elif( fileChoice == "Choose"):
 			ListServerFiles()
-			fileName = input("Input file name: ") # pick file from the server
+			fileName = input("Choose file name: ") # pick file from the server
 
 		elif( fileChoice == "Upload"): # upload file
 			fileName = input("Input file name to upload: ")
@@ -73,11 +93,20 @@ while True:
 		else:
 			print("Invalid input")
 
-		chunkfile(fileName, val1,val2)
+		file = chunkfile(fileName, val1,val2)
+		if(file.decode("utf-8") != "Values not in File"):
+			choice = input("File Chunked Successfully, Would you like to download?(y/n)")
+			if( choice == "y"):
+				downloadFile(file)
+
 
 	elif( text == "Random"):
-		ChunkRandom()
-
+		
+		file = ChunkRandom()
+		choice = input("File Chunked Successfully, Would you like to download?(y/n)")
+		if( choice == "y"):
+			downloadFile(file)
+		
 	elif( text == "Upload" ):
 		fileName = input("Input file name: ")
 		uploadFile(fileName)
