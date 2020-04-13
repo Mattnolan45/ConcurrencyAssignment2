@@ -1,6 +1,7 @@
 import requests, os
 
-flaskUrl = 'http://127.0.0.1:5000' # local 
+flaskUrl = 'http://oharam29.pythonanywhere.com' # python anywhere 
+#flaskUrl =  'http://127.0.0.1:5000/'
 download_path = 'D:/ConcurrencyAssignment2/DownloadedFiles' # directory for downloads
 
 
@@ -63,9 +64,11 @@ def ChunkRandom(num): # chunk random file
     		flaskUrl+'/Random',
     		params={'num':num}
 		)
+		return response.content
 	except Exception as e:
 		print("Invalid response from server")
-	return response.content
+	return ""
+	
 
 
 # start client
@@ -86,10 +89,10 @@ while True:
 				val1 = input("Input Starting Letter of chunk {} : ".format(i+1)) # value between two letters of the alphabet
 				val2 = input("Input Finishing Letter of chunk {} : ".format(i+1))
 				valuePairs += val1 + val2
-				
+
 			try:
 			
-				if( fileChoice == "d"):
+				if( fileChoice == "Default"):
 					fileName = "default.txt" # use default input
 				
 				elif( fileChoice == "Choose"):
