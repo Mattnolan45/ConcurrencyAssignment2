@@ -34,13 +34,18 @@ class ChunkGenerator:
 		sortedWords = [w.split()[1] for w in FileSorted ] # get a list of just the words 
 		letters = [l[0] for l in sortedWords]
 		
-		meta = []
+		
 		content = ""
+		TotalWords = 0
 		pairs = [valuePairs[i:i+2] for i in range(0,len(valuePairs),2)]
 		for pair in pairs:	
 			index1 = sortedWords.index(pair[0])  
 			index2 = len(sortedWords) - sortedWords[::-1].index(pair[1]) - 1 
+			res = FileSorted[index1 : index2 + letters.count(pair[1])]
+			TotalWords += len(res)
 			content += "".join(FileSorted[index1 : index2 + letters.count(pair[1])])
+
+		content += "Number of chunks: {} \nTotal Number of words in file: {}".format(len(pairs), TotalWords)
 
 		unique_filename = str(uuid.uuid4().hex)+".txt" # unique filename
 		self.GenerateChunkFile(unique_filename,content) # add in counts from the spec                                                  
