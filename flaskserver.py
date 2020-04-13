@@ -20,13 +20,13 @@ def display():
 
 @app.route('/chunk', methods=["GET"])
 def chunk():
-	t = generator.ChunkByLetters(request.args.get("fileName"), request.args.get("val1"), request.args.get("val2"))
-	return t
+	result = generator.ChunkByLetters(request.args.get("fileName"), request.args.get("valuePairs"))
+	return result
 
 
 @app.route('/Random', methods=["GET"])
 def RandomGeneratedChunk():
-	result = generator.GenerateRandomChunk()
+	result = generator.GenerateRandomChunk(request.args.get("num"))
 	return result
 
 

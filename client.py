@@ -17,13 +17,15 @@ def uploadFile(fileName): # upload file
 		print('File {} cannot be found'.format(fileName))
 	
 
-def chunkfile(fileName, val1, val2): # chunk file
+def chunkfile(fileName,valuePairs): # chunk file
 	try:
+
 		print("Chunking {}".format(fileName))
 		response = requests.get(
     		flaskUrl+'/chunk',
-    		params={'fileName': fileName,'val1': val1, 'val2' : val2},
+    		params={'fileName': fileName,'valuePairs' : valuePairs}
 		)	
+
 	except Exception as e:
 		print("Invalid response from server")
 	return response.content
@@ -43,7 +45,6 @@ def downloadFile(fileName):
 	print("File downloaded")
 
 
-
 def ListServerFiles(): # list all files uploaded to the server
 	response = requests.get(
 		flaskUrl+'/uploadedFiles'
@@ -55,11 +56,12 @@ def ListServerFiles(): # list all files uploaded to the server
 		print(f) 
 
 
-def ChunkRandom(): # chunk random file
+def ChunkRandom(num): # chunk random file
 	try:
 		print("Generating Random Chunk")
 		response = requests.get(
-    		flaskUrl+'/Random'
+    		flaskUrl+'/Random',
+    		params={'num':num}
 		)
 	except Exception as e:
 		print("Invalid response from server")
@@ -77,32 +79,45 @@ while True:
 		print("You entered: Chunk")
 		fileChoice = input("Would you like to chunk: the Default file (command: Default), Choose file from server (command: Choose) or Upload file (command: Upload)?: ")
 		
-		val1 = input("Input Starting Letter: ") # value between two letters of the alphabet
-		val2 = input("Input Finishing Letter: ")
+		try:
+			valuePairs = ""		
+			NumOfChunks = input("Input number of chunks: ")
+			for i in range(int(NumOfChunks)):
+				val1 = input("Input Starting Letter of chunk {} : ".format(i+1)) # value between two letters of the alphabet
+				val2 = input("Input Finishing Letter of chunk {} : ".format(i+1))
+				valuePairs += val1 + val2
+				
+			try:
+			
+				if( fileChoice == "d"):
+					fileName = "default.txt" # use default input
+				
+				elif( fileChoice == "Choose"):
+					ListServerFiles()
+					fileName = input("Choose file name: ") # pick file from the server
+
+				elif( fileChoice == "Upload"): # upload file
+					fileName = input("Input file name to upload: ")
+					uploadFile(fileName)
 		
-		if( fileChoice == "Default"):
-			fileName = "default.txt" # use default input
+				file = chunkfile(fileName, valuePairs)
+
+				if(file.decode("utf-8") != "Values not in File"):
+					choice = input("File Chunked Successfully, Would you like to download?(y/n)")
+					if( choice == "y"):
+						downloadFile(file)
+
+			except:
+				print("Invalid input")
+
+		except Exception as e:
+			print("Invalid entry")
+
 		
-		elif( fileChoice == "Choose"):
-			ListServerFiles()
-			fileName = input("Choose file name: ") # pick file from the server
-
-		elif( fileChoice == "Upload"): # upload file
-			fileName = input("Input file name to upload: ")
-			uploadFile(fileName)
-		else:
-			print("Invalid input")
-
-		file = chunkfile(fileName, val1,val2)
-		if(file.decode("utf-8") != "Values not in File"):
-			choice = input("File Chunked Successfully, Would you like to download?(y/n)")
-			if( choice == "y"):
-				downloadFile(file)
-
 
 	elif( text == "Random"):
-		
-		file = ChunkRandom()
+		nums = input("how many chunks: ")
+		file = ChunkRandom(int(nums))
 		choice = input("File Chunked Successfully, Would you like to download?(y/n)")
 		if( choice == "y"):
 			downloadFile(file)
